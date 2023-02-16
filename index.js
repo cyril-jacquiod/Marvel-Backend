@@ -1,11 +1,3 @@
-// Le site que tu fais doit respecter les fonctionnalités listées dans l'énoncée.
-
-// Ton front doit contenir 3 pages, par exemple une page qui liste les personnages de marvel. Pour avoir la liste des personnages de marvel, il faut faire une requête à l'API de la documentation.
-// Ces requêtes doivent contenir l'API key, qui est censée être secrète, donc on ne peut pas faire les requêtes à l'API depuis le front directement car on ne peut pas cacher d'information en front.
-
-// On doit, donc, créer un backend intermédiaire.
-// Notre front va faire une requête au backend intermédiaire, qui va faire une requête à l'API en envoyant l'api_key.
-// Cette dernière va répondre au backend intermédiaire qui va répondre au front.
 // ACTIVE VARIABLES D'ENVIRONNEMENT DANS .env
 require("dotenv").config();
 
@@ -14,7 +6,7 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
-const router = express.Router();
+const axios = require("axios");
 
 // JE CREE MON SERVEUR
 const app = express();
@@ -54,11 +46,13 @@ app.get("/Characters", async (req, res) => {
     // NB D'ELEMENT PAR PAGE = 100
     const limit = req.query.limit || "100";
 
-    console / log(name);
+    // CETTE REQUETE : LISTE DES CHARACTERS
+    console.log(name);
     const response = await axios.get(
-      "/https://lereacteur-marvel-api.herokuapp.com/comics?apiKey=UDzeRv7FEZol1MLG"
+      `https://lereacteur-marvel-api.herokuapp.com/characters?apiKey=${process.env.MARVEL_API_KEY}`
     );
-    // VERIFICATION AVEC console.log(response.data);
+    // VERIFICATION AVEC
+    console.log(response.data);
 
     // STOCKAGE DU RESULTAT DANS DATA
     res.json(response.data);
@@ -67,20 +61,20 @@ app.get("/Characters", async (req, res) => {
   }
 });
 
-// CETTE REQUETE : AUCUN RESULTAT
-app.get(
-  "https://lereacteur-marvel-api.herokuapp.com/comics/5fc8ba1fdc33470f788f88b3?apiKey=UDzeRv7FEZol1MLG",
-  (req, res) => {
-    res.send("Hello");
-  }
-);
-// CETTE REQUETE : LISTE DES CHARACTERES
-app.get(
-  "https://lereacteur-marvel-api.herokuapp.com/characters?apiKey=${process.env.MARVEL_API_KEY}&name=${name}&",
-  (req, res) => {
-    res.send("Hello");
-  }
-);
+// // CETTE REQUETE : AUCUN RESULTAT
+// app.get(
+//   "https://lereacteur-marvel-api.herokuapp.com/comics/5fc8ba1fdc33470f788f88b3?apiKey=UDzeRv7FEZol1MLG",
+//   (req, res) => {
+//     res.send("Hello");
+//   }
+// );
+// // CETTE REQUETE : LISTE DES CHARACTERS
+// app.get(
+//   "https://lereacteur-marvel-api.herokuapp.com/characters?apiKey=${process.env.MARVEL_API_KEY}&name=${name}&",
+//   (req, res) => {
+//     res.send("Hello");
+//   }
+// );
 // CETTE REQUETE : INFO SUR UN CHARACTERE
 app.get(
   "https://lereacteur-marvel-api.herokuapp.com/character/5fcf91f4d8a2480017b91453?apiKey=UDzeRv7FEZol1MLG",
@@ -88,6 +82,10 @@ app.get(
     res.send("Hello");
   }
 );
+
+app.all("*", (req, res) => {
+  res.status(404).json({ message: "This route doesn't exist" });
+});
 
 // PORT INDIQUE DANS .ENV ET PAR DEFAUT 4000
 app.listen(process.env.PORT || 4000, () => {
