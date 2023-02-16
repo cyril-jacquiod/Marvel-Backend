@@ -6,30 +6,29 @@
 // On doit, donc, créer un backend intermédiaire.
 // Notre front va faire une requête au backend intermédiaire, qui va faire une requête à l'API en envoyant l'api_key.
 // Cette dernière va répondre au backend intermédiaire qui va répondre au front.
-
-// BESOIN DE STATE
-import React, { useState, useEffect } from "react";
-// BESOIN DE REQUETE AXIOS (GET)
-import axios from "axios";
+// ACTIVE VARIABLES D'ENVIRONNEMENT DANS .env
+require("dotenv").config();
 
 //DEPENDANCES UTILISEES
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
-
-// ACTIVE VARIABLES D'ENVIRONNEMENT DANS .env
-// require("dotenv").config();
+const morgan = require("morgan");
+const router = express.Router();
 
 // JE CREE MON SERVEUR
 const app = express();
+
 // POUR UNE UTILISATION MULTI-NAVIGATEURS
 app.use(cors());
 // POUR QUE SERVEUR RECUPERE BODY
 app.use(express.json());
 
-// CONNEXION À BASE DE DONNEE
-// mongoose.set("strictQuery", false);
-// mongoose.connect(process.env.MONGODB_URI);
+app.use(morgan("dev"));
+
+// CONNEXION À BASE DE DONNEE POUR INSCRIPTION AU SITE
+mongoose.set("strictQuery", false);
+mongoose.connect(process.env.MONGODB_URI);
 
 // cloudinary.config({
 //   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -38,52 +37,36 @@ app.use(express.json());
 //   secure: true,
 // });
 
-// ROUTES
-// const userRoutes = require("./routes/user");
-// const offerRoutes = require("./routes/offer");
-// app.use(userRoutes);
-// app.use(offerRoutes);
+// DECLARATION DE FONCTION FAISANT LA REQUETE VIA UNE AUTRE FONCTION (FCT USEEFFECT PAS ASYNC)
+app.get("/Characters", async (req, res) => {
+  // TRY CATCH EN CAS DE REQUETE KO
+  try {
+    // REQUETE POUR AFFICHAGE PAGE
+    // let name = "";
+    // if (req.query.name) {
+    //   name = req.query.name;
+    // }
 
-// STATE DE RECUPERATION DU DATA
-const [data, setData] = useState();
-// STATE PERMETTANT DE SAVOIR SI DATA RECUPERE
-const [isLoading, setIsLoading] = useState(true);
+    // RECUPERATION DU DATA VIA QUERY NAME
+    const name = req.query.name || "";
+    // SAUT DE PAGE SI ELEMENT = 100
+    const skip = req.query.skip || "0";
+    // NB D'ELEMENT PAR PAGE = 100
+    const limit = req.query.limit || "100";
 
-// CETTE REQUETE : LISTE DES COMICS "THUMBNAIL"
-useEffect(() => {
-  // DECLARATION DE FONCTION FAISANT LA REQUETE VIA UNE AUTRE FONCTION (FCT USEEFFECT PAS ASYNC)
-  const fetchData = async () => {
-    // TRY CATCH EN CAS DE REQUETE KO
-    try {
-      // DECLARATION DE LA VARIABLE RESPONSE AVEC CLE RECHERCHE TITLE FONCTIONNE PAS
-      const response = await axios.get(
-        "/https://lereacteur-marvel-api.herokuapp.com/comics?apiKey=UDzeRv7FEZol1MLG"
-      );
-      // VERIFICATION AVEC console.log(response.data);
+    console / log(name);
+    const response = await axios.get(
+      "/https://lereacteur-marvel-api.herokuapp.com/comics?apiKey=UDzeRv7FEZol1MLG"
+    );
+    // VERIFICATION AVEC console.log(response.data);
 
-      // STOCKAGE DU RESULTAT DANS DATA
-      setData(response.data);
-      // METTRE ISLOADING A FALSE
-      setIsLoading(false);
-    } catch (error) {
-      console.log(error.message);
-    }
-  };
-  // APPEL DE LA FONCTION
-  fetchData();
-}, []);
-// MESSAGE DE TELECHARGEMENT
-return isLoading ? (
-  <p>Loading ...</p>
-) : (
-  <div>
-    {/* // UTILISATION D'UN TABLEAU POUR RECUPERER LES DATAS */}
-    {data.results.map((results) => {
-      // RECUPERATION DES OFFRES PAR ID
-      return <Comics results={results} key={results._id} />;
-    })}
-  </div>
-);
+    // STOCKAGE DU RESULTAT DANS DATA
+    res.json(response.data);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
 // CETTE REQUETE : AUCUN RESULTAT
 app.get(
   "https://lereacteur-marvel-api.herokuapp.com/comics/5fc8ba1fdc33470f788f88b3?apiKey=UDzeRv7FEZol1MLG",
@@ -93,7 +76,7 @@ app.get(
 );
 // CETTE REQUETE : LISTE DES CHARACTERES
 app.get(
-  "https://lereacteur-marvel-api.herokuapp.com/characters?apiKey=UDzeRv7FEZol1MLG",
+  "https://lereacteur-marvel-api.herokuapp.com/characters?apiKey=${process.env.MARVEL_API_KEY}&name=${name}&",
   (req, res) => {
     res.send("Hello");
   }
@@ -106,7 +89,7 @@ app.get(
   }
 );
 
-// PORT PAR DEFAUT INDIQUE DANS .ENV
-app.listen(4000, () => {
-  console.log("Server started");
+// PORT INDIQUE DANS .ENV ET PAR DEFAUT 4000
+app.listen(process.env.PORT || 4000, () => {
+  console.log(`Server has started`);
 });
