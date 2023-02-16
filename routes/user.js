@@ -5,41 +5,38 @@ const User = require("../models/User");
 
 router.post("/user/signup", async (req, res) => {
   try {
-    // console.log(req.body);
-    // return res.json(req.body);
+    // RETOUR DE LA REQUE return res.json(req.body);
     const { email, username, description } = req.body;
 
-    // Vérifier qu'on a bien reçu toutes les infos
+    // VERIFICATION BONNE RECEPTION
     if (!email || !username || !description) {
       return res
         .status(400)
         .json({ message: "Please send an email a username and a description" });
     }
 
-    // Vérifier si l'email n'est pas utilisé
-    // Je veux aller chercher dans ma BDD un utilisateur ayant pour email, la variable email. Si j'en trouve un, je renvoie une erreur, sinon, je continue
+    // CONTROLE MAIL BDD : SI PRESENT ALORS "ERREUR" SINON "JE CONTINUE"
     const emailAlreadyUsed = await User.findOne({ email: email });
-    // console.log(emailAlreadyUsed);
+    // VERIFICATION : console.log(emailAlreadyUsed);
     if (emailAlreadyUsed) {
       return res.status(409).json({ message: "This email is already used" });
     }
-    // Vérifier si le username n'est pas utilisé
-    // Je veux aller chercher dans ma BDD un utilisateur ayant pour username, la variable username. Si j'en trouve un, je renvoie une erreur, sinon, je continue
+    // CONTROLE MAIL USERNAME : SI PRESENT ALORS "ERREUR" SINON "JE CONTINUE"
     const usernameAlreadyUsed = await User.findOne({ username: username });
     if (usernameAlreadyUsed) {
       return res.status(409).json({ message: "This username is already used" });
     }
-    //1
+    // ETAPE 1
     const newUser = new User({
       email: email,
       username: username,
       description: description,
     });
 
-    //2
+    // ETAPE 2
     await newUser.save();
 
-    //3
+    // ETAPE 3
     res.json(newUser);
   } catch (error) {
     console.log(error.message);

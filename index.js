@@ -15,7 +15,6 @@ const app = express();
 app.use(cors());
 // POUR QUE SERVEUR RECUPERE BODY
 app.use(express.json());
-
 app.use(morgan("dev"));
 
 // CONNEXION À BASE DE DONNEE POUR INSCRIPTION AU SITE
@@ -29,59 +28,72 @@ mongoose.connect(process.env.MONGODB_URI);
 //   secure: true,
 // });
 
-// DECLARATION DE FONCTION FAISANT LA REQUETE VIA UNE AUTRE FONCTION (FCT USEEFFECT PAS ASYNC)
+/*********************************************************/
+/*********** REQUETE CARACTERS ***************************/
+/*********************************************************/
+
 app.get("/Characters", async (req, res) => {
   // TRY CATCH EN CAS DE REQUETE KO
   try {
-    // REQUETE POUR AFFICHAGE PAGE
+    // REQUETE POUR REQUETER PAR NOM
     // let name = "";
     // if (req.query.name) {
     //   name = req.query.name;
     // }
 
-    // RECUPERATION DU DATA VIA QUERY NAME
+    // REQUETE VIA QUERY NAME
     const name = req.query.name || "";
-    // SAUT DE PAGE SI ELEMENT = 100
+    // SAUT DE PAGE SI > 100 ELEMENTS
     const skip = req.query.skip || "0";
     // NB D'ELEMENT PAR PAGE = 100
     const limit = req.query.limit || "100";
 
-    // CETTE REQUETE : LISTE DES CHARACTERS
+    // RECUPERATION DES DONNEES
     console.log(name);
     const response = await axios.get(
-      `https://lereacteur-marvel-api.herokuapp.com/characters?apiKey=${process.env.MARVEL_API_KEY}`
-    );
-    // VERIFICATION AVEC
-    console.log(response.data);
+      `https://lereacteur-marvel-api.herokuapp.com/characters?apiKey=${process.env.MARVEL_API_KEY}&name=${name}&skip=${skip}&limit=${limit}`
 
-    // STOCKAGE DU RESULTAT DANS DATA
+      // VERIFICATION POSTMAN DE L'URL AVEC API KEY OK
+      // `https://lereacteur-marvel-api.herokuapp.com/characters?apiKey=UDzeRv7FEZol1MLG`
+    );
+    // VERIFICATION : console.log(response.data);
+
+    // RENVOI DU RESULTAT OU D'UN MESSAGE D'ERREUR
     res.json(response.data);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
+/*********************************************************/
+/*********** REQUETE COMICS ******************************/
+/*********************************************************/
 
-// // CETTE REQUETE : AUCUN RESULTAT
-// app.get(
-//   "https://lereacteur-marvel-api.herokuapp.com/comics/5fc8ba1fdc33470f788f88b3?apiKey=UDzeRv7FEZol1MLG",
-//   (req, res) => {
-//     res.send("Hello");
-//   }
-// );
-// // CETTE REQUETE : LISTE DES CHARACTERS
-// app.get(
-//   "https://lereacteur-marvel-api.herokuapp.com/characters?apiKey=${process.env.MARVEL_API_KEY}&name=${name}&",
-//   (req, res) => {
-//     res.send("Hello");
-//   }
-// );
-// CETTE REQUETE : INFO SUR UN CHARACTERE
-app.get(
-  "https://lereacteur-marvel-api.herokuapp.com/character/5fcf91f4d8a2480017b91453?apiKey=UDzeRv7FEZol1MLG",
-  (req, res) => {
-    res.send("Hello");
+app.get("/Comics", async (req, res) => {
+  // TRY CATCH EN CAS DE REQUETE KO
+  try {
+    // REQUETE VIA QUERY TITLE
+    const title = req.query.title || "";
+    // SAUT DE PAGE SI > 100 ELEMENTS
+    const skip = req.query.skip || "0";
+    // NB D'ELEMENT PAR PAGE = 100
+    const limit = req.query.limit || "100";
+
+    // RECUPERATION DES DONNEES
+    console.log(title);
+    const response = await axios.get(
+      `https://lereacteur-marvel-api.herokuapp.com/comics?apiKey=${process.env.MARVEL_API_KEY}&title=${title}&skip=${skip}&limit=${limit}`
+
+      // VERIFICATION POSTMAN DE L'URL AVEC API KEY OK
+      // `https://lereacteur-marvel-api.herokuapp.com/comics?apiKey=UDzeRv7FEZol1MLG`
+    );
+    // VERIFICATION : console.log(response.data);
+
+    // RENVOI DU RESULTAT OU D'UN MESSAGE D'ERREUR
+    res.json(response.data);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
-);
+});
 
 app.all("*", (req, res) => {
   res.status(404).json({ message: "This route doesn't exist" });
