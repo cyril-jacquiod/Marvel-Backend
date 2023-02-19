@@ -81,8 +81,7 @@ app.get("/Comics", async (req, res) => {
     // RECUPERATION DES DONNEES
     console.log(title);
     const response = await axios.get(
-      `https://lereacteur-marvel-api.herokuapp.com/comics?apiKey=${process.env.MARVEL_API_KEY}&title=${title}&skip=${skip}&limit=${limit}`
-
+      `https://lereacteur-marvel-api.herokuapp.com/comics?apiKey=${process.env.MARVEL_API_KEY}`
       // VERIFICATION POSTMAN DE L'URL AVEC API KEY OK
       // `https://lereacteur-marvel-api.herokuapp.com/comics?apiKey=UDzeRv7FEZol1MLG`
     );
@@ -100,6 +99,6 @@ app.all("*", (req, res) => {
 });
 
 // PORT INDIQUE DANS .ENV ET PAR DEFAUT 4000
-app.listen(process.env.PORT || 4000, () => {
+app.listen(process.env.PORT || 3000, () => {
   console.log(`Server has started`);
 });
